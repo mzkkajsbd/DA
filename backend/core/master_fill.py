@@ -283,7 +283,8 @@ async def parse_fill_workbook(db, data: bytes) -> dict:
     bom = {"bom_groups": [], "bom_lines": [], "bom_warnings": [], "bom_issues": [], "bom_issue_counts": {}}
     if "BOM_AKSESORIS" in wb.sheetnames:
         from core.bom_fill import parse_bom_sheet
-        bom = await parse_bom_sheet(db, wb["BOM_AKSESORIS"], models)
+        from core.gap_sisa import bom_rows_from_wb
+        bom = await parse_bom_sheet(db, bom_rows_from_wb(wb), models)  # BOM_AKSESORIS + BOM_OTOMATIS (berkas FOKUS)
         bom_rows = bom["bom_lines"]
     if "MODEL" in wb.sheetnames:
         for i, r in enumerate(wb["MODEL"].iter_rows(values_only=True, min_row=2), start=2):
