@@ -1,5 +1,30 @@
 # PRD — CV. Dewi Aditya ERP
 
+## SESI 2026-09-19 — BERKAS FOKUS: klien hanya mengisi sel kuning (BOM · VARIAN_BARU · MATERIAL)
+- Permintaan user: klien kebingungan mengisi `DATA_YANG_PERLU_DIISI_DA_SISA.xlsx` (17 sheet, 1.100+ baris stok awal). Fokuskan hanya pada
+  BOM/MATERIAL/VARIAN BARU, sediakan semua data sehingga klien hanya mengisi kolom kosong.
+- Setup container baru dari `pandeyoga/DAHOST`: rsync → bootstrap (pip konflik emergentintegrations/litellm dilewati, sudah di image) →
+  build statis → `seed_golive_restore.sh` (data klien nyata: 104 model · 645 varian · 1756 material · 634 BOM · 38 user).
+- Berkas SISA yang diunggah user = hasil generate sesi lalu, MASIH KOSONG (174 catatan: 100 kelompok tanpa varian, 47 model tanpa SKU,
+  21 satuan tak valid, 4 qty kosong, 2 warna tak dikenal).
+- **Baru** `core/gap_fokus.py` + `POST /api/rahaza/master/gap-fokus` (file opsional) → `DATA_YANG_PERLU_DIISI_DA_FOKUS.xlsx`:
+  5 sheet saja (PETUNJUK · VARIAN_BARU · BOM_AKSESORIS · MATERIAL · REF_AKSESORIS). Sel KUNING = wajib isi, BIRU = diisi otomatis (periksa),
+  ABU = tidak perlu diubah. Kolom `yang_perlu_diisi` per baris. Posisi 8 kolom importir BOM tidak berubah → bisa diunggah balik apa adanya.
+- **Saran varian** (`suggest_varian`): dari nama bahan PEMBEDA antar-kelompok satu model (bahan yang ada di semua kelompok diabaikan);
+  hanya bila tepat 1 warna ditemukan (+ typo ≥0.85, mis. Maron→MAROON); divalidasi menghasilkan SKU. Hasil: 58/100 kelompok terisi otomatis,
+  42 tetap manual (warna kancing bukan warna varian model — jujur, tidak ditebak). Unggah balik FOKUS apa adanya → 66 kelompok/190 baris siap.
+- **Perbaikan importir MATERIAL** (`parse_fill_workbook` + `apply_materials`): bila satuan_beli = satuan dasar kemasan (roll/pack) & isi > 1 ⇒
+  isi = pcs per kemasan (`pack_size`, uom pcs 1/isi) dan harga TETAP per kemasan (dulu dibagi isi → salah; A-LBL-0004=600 pcs/roll @61.800 jadi acuan).
+  Baris hanya-isi (harga sudah ada) kini diterapkan. `fill-apply` pra-terapkan isi kemasan + varian baru lalu parse ulang → baris BOM 'pcs'
+  material itu (A-BAB-0001 di DA-2105) ikut masuk pada unggahan yang sama.
+- UI `RahazaMasterFillModule.jsx`: tombol utama Langkah 1 = `fill-download-fokus`; berkas lengkap & template jadi sekunder.
+- Bukti: `backend/tests/test_iter218_gap_fokus.py` 8/8 (restore seed di akhir) · testing agent iteration_218 backend 8/8, UI 7/7, 0 bug.
+  Contoh berkas: `/api/uploads/DATA_YANG_PERLU_DIISI_DA_FOKUS.xlsx` (juga `private/golive/`). Simulasi klien: isi 50 pcs/roll Babud + harga 1
+  benang + ukuran 7 varian Lunara + 4 qty → apply 7 varian/298 baris/97 BOM, apply ke-2 = 0 perubahan, FOKUS ke-2 menyusut 458→273 baris.
+- Backlog: (P1) kirim `DATA_YANG_PERLU_DIISI_DA_FOKUS.xlsx` ke klien; (P1) 42 kelompok manual = warna kancing ≠ warna varian → klien tentukan;
+  (P2) saran `ukuran` VARIAN_BARU dari model saudara bernama sama; (P2) jalankan `bash scripts/gate.sh` penuh sebelum deploy VPS
+  (`deploy/update.sh`); (P2) bootstrap.sh: lewati pin emergentintegrations/litellm otomatis.
+
 ## SESI 2026-09-17 (f) — Berkas klien DITERAPKAN SELURUHNYA (semua sheet) + SKU "sudah tidak dijual" + seed & delta VPS
 - Verifikasi: BOM_AKSESORIS berkas klien `DATA_YANG_PERLU_DIISI_DA (2).xlsx` memang sudah ada di seed (apply → 517 BOM unchanged, 0 baris baru).
   Yang BELUM pernah diterapkan sesi sebelumnya (hanya mode "hanya BOM"): **HARGA_JUAL_SKU 229 harga jual + 30 SKU bertuliskan

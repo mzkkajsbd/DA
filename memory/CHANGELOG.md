@@ -1,3 +1,9 @@
+# [2026-09-19 #45] **BERKAS FOKUS — klien hanya mengisi sel kuning** (BOM · VARIAN_BARU · MATERIAL)
+- `core/gap_fokus.py` + `POST /api/rahaza/master/gap-fokus` → `DATA_YANG_PERLU_DIISI_DA_FOKUS.xlsx` 5 sheet; sel kuning/biru/abu; kolom `yang_perlu_diisi`.
+- Saran varian dari nama bahan pembeda antar-kelompok (58/100 kelompok), bukan tebakan importir; unggah balik apa adanya langsung terpakai.
+- Importir MATERIAL: isi_per_satuan_beli pada satuan dasar kemasan = pcs per kemasan, harga tetap per kemasan; baris hanya-isi diterapkan;
+  fill-apply pra-terapkan kemasan+varian lalu parse ulang. Uji `tests/test_iter218_gap_fokus.py` 8/8 · testing agent iter 218 hijau.
+
 # [2026-09-12 #44] **BAGAN AKUN TUNGGAL 4 DIGIT (INV-F47) · SALDO AWAL GO-LIVE · KATEGORI MODEL**
 - Skema 3 digit dihapus; akun khas DA dipindah ke 4 digit; profil posting/channel/sub-ledger/kas/expense diremap; gate INV-F47.
 - Template & impor saldo awal neraca (`scripts/saldo_awal_golive.py`). Crosscheck Excel akuntansi: `docs/CROSSCHECK_AKUNTANSI_EXCEL_TUTUT.md`.
